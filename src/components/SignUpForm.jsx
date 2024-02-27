@@ -1,60 +1,69 @@
 // src/components/SignUpForm.jsx
-import { useState } from 'react'
+import React, { useState } from 'react';
 
-// Define a component that will be used in the App component
-export default function SignUpForm() {
-    
-    // Define state variables for the username, password, and password confirmation
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
+export default function SignUpForm({ setToken }) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     async function handleSubmit(event) {
         event.preventDefault();
 
+
+        // Form validation for username
+        if (username.length < 8) {
+            setError('Username must be at least 8 characters long.');
+            return;
+        
+        }
+
+        // Form validation for password
         try {
-            const response = await fetch('htt[https://fsa-jwt-practice.herokuapp.com/signup', {
+            const response = await fetch('https://fsa-jwt-practice.herokuapp.com/signup', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    username,
-                    password
-                })
+                body: JSON.stringify({ username, password }),
             });
 
-                const result = await response.json();
-                console.log(result);
-                } catch (error) {
-                    setError(error.message);
-                }
+            // If the response is not ok, throw an error
+            const result = await response.json();
+            if (result.token) {
+                setToken(result.token);
+            } else {
+                throw new Error(result.message || 'Signup failed');
+            }
+        } catch (error) {
+            setError(error.message);
+        }
     }
 
-
-    // Return a form with a username and password input
-    return (    
-    
-    <>
-    <h2>Sign Up!</h2>
-    {/* Display the error message if there is one */}
-    {error && <p>{error}</p>}
-
-    {/* Create a form with a username and password input */}
-    <form onSubmit={handleSubmit}>
-        <label>
-            Username:
-            <input value={username} onChange={(e) => setUsername(e.target.value)} />
-        </label>
-        <br />
-        <label>
-            Password:
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        <br />
-        <button type="submit">Submit</button>
-        <p style={{color: 'red'}}>{error}</p>
-    </form>
-    </>
-    )
+    // Ensure this return statement is inside the component function
+    return (
+        <>
+            <h2>Sign Up!</h2>
+            {error && <p style={{color: 'red' }}>{error}</p>}
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Username:
+                    <input 
+                        value={username} 
+                        onChange={(e) => setUsername(e.target.value)} 
+                    />
+                </label>
+                <br />
+                <label>
+                    Password:
+                    <input 
+                        type="password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                    />
+                </label>
+                <br />
+                <button type="submit">Submit</button>
+            </form>
+        </>
+    );
 }
